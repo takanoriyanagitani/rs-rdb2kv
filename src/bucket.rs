@@ -7,3 +7,9 @@ impl Bucket {
         self.name.as_str()
     }
 }
+
+impl From<String> for Bucket {
+    fn from(name: String) -> Self {
+        Self { name }
+    }
+}

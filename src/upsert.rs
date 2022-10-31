@@ -143,7 +143,7 @@ mod test_upsert {
 
     mod upsert_bytes_all_new_immutable {
 
-        use crate::upsert::{upsert_builder_new, Bucket};
+        use crate::upsert::{upsert_builder_new, Bucket, BulkRequest, Item};
 
         struct DummyTransaction {}
 
@@ -160,6 +160,36 @@ mod test_upsert {
             let mut dt: DummyTransaction = DummyTransaction {};
             let cnt: u64 = f(req.into_iter(), &mut dt).unwrap();
             assert_eq!(cnt, 0);
+        }
+
+        #[test]
+        fn test_single_request() {
+            let c = |_t: &DummyTransaction, _q: &str| Ok(1);
+            let u = |_t: &DummyTransaction, _q: &str, _key: &[u8], _val: &[u8]| Ok(1);
+            let b = upsert_builder_new(
+                |bkt: &Bucket| Ok(format!("CREATE TABLE {}", bkt.as_str())),
+                |_bk: &Bucket| Ok(String::from("")),
+            );
+            let f = crate::upsert::upsert_bytes_all_new_immutable(c, u, b);
+            let req = vec![BulkRequest::new(
+                Bucket::from(String::from(
+                    "data_2022_10_31_cafef00ddeadbeafface864299792458",
+                )),
+                vec![Item::new(
+                    String::from("06:40:28.0Z").into_bytes(),
+                    String::from(
+                        r#"{
+                            "timestamp": "2022-10-31T06:40:28.0Z",
+                            "data": [
+                            ]
+                        }"#,
+                    )
+                    .into_bytes(),
+                )],
+            )];
+            let mut dt: DummyTransaction = DummyTransaction {};
+            let cnt: u64 = f(req.into_iter(), &mut dt).unwrap();
+            assert_eq!(cnt, 2);
         }
     }
 }

@@ -1,8 +1,10 @@
 [package]
 name = "rs-rdb2kv"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "RDB as key value store"
+license = "Apache-2.0"
+documentation = "https://docs.rs/crate/rs-rdb2kv/latest"
+repository = "https://github.com/takanoriyanagitani/rs-rdb2kv"
 
 [dependencies]

@@ -19,4 +19,9 @@ impl<K, V> Item<K, V> {
     pub fn as_val(&self) -> &V {
         &self.val
     }
+
+    /// Gets raw key/val(unpack).
+    pub fn into_pair(self) -> (K, V) {
+        (self.key, self.val)
+    }
 }

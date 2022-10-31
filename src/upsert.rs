@@ -25,6 +25,32 @@ impl<K, V> BulkRequest<K, V> {
     }
 }
 
+/// Converts generic request to raw request(key/val = bytes).
+///
+/// # Arguments
+/// - original: Original request to be converted.
+/// - key2bytes: Converts keys into bytes.
+/// - val2bytes: Converts values into bytes.
+pub fn convert_request<K, V, F, G>(
+    original: BulkRequest<K, V>,
+    key2bytes: F,
+    val2bytes: G,
+) -> BulkRequest<Vec<u8>, Vec<u8>>
+where
+    F: Fn(K) -> Vec<u8>,
+    G: Fn(V) -> Vec<u8>,
+{
+    let b: Bucket = original.bucket;
+    let v: Vec<Item<K, V>> = original.items;
+    let converted = v.into_iter().map(|item: Item<_, _>| {
+        let (key, val) = item.into_pair();
+        let kb: Vec<u8> = key2bytes(key);
+        let vb: Vec<u8> = val2bytes(val);
+        Item::new(kb, vb)
+    });
+    BulkRequest::new(b, converted.collect())
+}
+
 /// Traits for building create/upsert query strings from `Bucket`.
 pub trait UpsertBuilder {
     /// Builds create query from `Bucket`.

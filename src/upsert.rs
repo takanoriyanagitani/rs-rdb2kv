@@ -243,4 +243,28 @@ mod test_upsert {
             assert_eq!(cnt, 2);
         }
     }
+
+    mod convert_request {
+        use crate::upsert::{convert_request, Bucket, BulkRequest, Item};
+
+        #[test]
+        fn test_strings2bytes() {
+            let before = BulkRequest::new(
+                Bucket::from(String::from("dates_cafef00ddeadbeafface864299792458")),
+                vec![Item::new(String::from("2022/10/31"), String::from(""))],
+            );
+            let after = convert_request(
+                before,
+                |key: String| key.into_bytes(),
+                |val: String| val.into_bytes(),
+            );
+            let b: &Bucket = after.as_bucket();
+            let items: &[Item<Vec<u8>, Vec<u8>>] = after.as_items();
+            assert_eq!(b.as_str(), "dates_cafef00ddeadbeafface864299792458");
+            assert_eq!(items.len(), 1);
+            let i: &Item<_, _> = &items[0];
+            assert_eq!(i.as_key(), b"2022/10/31");
+            assert_eq!(i.as_val(), b"");
+        }
+    }
 }

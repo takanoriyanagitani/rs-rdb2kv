@@ -2,27 +2,35 @@ use crate::bucket::Bucket;
 use crate::evt::Event;
 use crate::item::Item;
 
+/// An upsert requests in a single bucket.
 pub struct BulkRequest<K, V> {
     bucket: Bucket,
     items: Vec<Item<K, V>>,
 }
 
 impl<K, V> BulkRequest<K, V> {
+    /// Creates new upsert request for the bucket.
     pub fn new(bucket: Bucket, items: Vec<Item<K, V>>) -> Self {
         Self { bucket, items }
     }
 
+    /// Gets the bucket reference.
     pub fn as_bucket(&self) -> &Bucket {
         &self.bucket
     }
 
+    /// Gets items as reference.
     pub fn as_items(&self) -> &[Item<K, V>] {
         &self.items
     }
 }
 
+/// Traits for building create/upsert query strings from `Bucket`.
 pub trait UpsertBuilder {
+    /// Builds create query from `Bucket`.
     fn build_create(&self, b: &Bucket) -> Result<String, Event>;
+
+    /// Builds upsert query from `Bucket`.
     fn build_upsert(&self, b: &Bucket) -> Result<String, Event>;
 }
 
@@ -43,6 +51,11 @@ where
     }
 }
 
+/// Creates new `UpsertBuilder` implementation which uses closures to build query strings.
+///
+/// # Arguments
+/// - create: Builds create query string.
+/// - upsert: Builds upsert query string.
 pub fn upsert_builder_new<C, U>(create: C, upsert: U) -> impl UpsertBuilder
 where
     C: Fn(&Bucket) -> Result<String, Event>,
@@ -107,6 +120,12 @@ where
     requests.try_fold(0, |tot, req| f(&req, transaction).map(|cnt| cnt + tot))
 }
 
+/// Creates upsert requests handler which uses closures to create/upsert and build query strings.
+///
+/// # Arguments
+/// - create: Creates bucket which uses mutable transaction object.
+/// - upsert: Upserts into the bucket which uses mutable transaction object.
+/// - builder: Builds create/upsert query strings.
 pub fn upsert_bytes_all_new_mut<C, U, B, I, T>(
     create: C,
     upsert: U,
@@ -122,6 +141,12 @@ where
     move |requests: I, transaction: &mut T| upsert_bytes_all_mut(requests, transaction, &f)
 }
 
+/// Creates upsert requests handler which uses closures to create/upsert and build query strings.
+///
+/// # Arguments
+/// - create: Creates bucket which use immutable transaction object.
+/// - upsert: Upserts into the bucket which use immutable transaction object.
+/// - builder: Builds create/upsert query strings.
 pub fn upsert_bytes_all_new_immutable<C, U, B, I, T>(
     create: C,
     upsert: U,

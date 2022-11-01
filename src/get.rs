@@ -43,3 +43,30 @@ where
         select(client, query.as_str(), k)
     }
 }
+
+#[cfg(test)]
+mod test_get {
+
+    mod select_bytes_new_mut {
+
+        use crate::get::{self, GetRequest};
+
+        use crate::bucket::Bucket;
+
+        struct DummyClient {}
+
+        #[test]
+        fn test_empty() {
+            let mut dc: DummyClient = DummyClient {};
+            let q: GetRequest<_> = GetRequest::new(
+                Bucket::from(String::from("dates")),
+                String::from("2022/11/01").into_bytes(),
+            );
+            let sel = |_c: &mut DummyClient, _q: &str, _k: &[u8]| Ok(None);
+            let gen = |_: &Bucket| Ok(String::from(""));
+            let f = get::select_bytes_new_mut(sel, gen);
+            let ov: Option<_> = f(&q, &mut dc).unwrap();
+            assert_eq!(ov, None);
+        }
+    }
+}

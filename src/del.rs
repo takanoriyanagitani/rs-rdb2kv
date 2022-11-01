@@ -41,3 +41,42 @@ pub fn drop_builder_default_unchecked() -> impl Fn(&Bucket) -> Result<String, Ev
     let checker = bucket_checker_new_unchecked();
     drop_builder_default_checked(checker)
 }
+
+#[cfg(test)]
+mod test_del {
+
+    mod drop_builder_default_unchecked {
+
+        use crate::bucket::Bucket;
+        use crate::del;
+
+        #[test]
+        fn test_short_tablename() {
+            let f = del::drop_builder_default_unchecked();
+            let b = Bucket::from(String::from("devices_2022_11_01"));
+            let s: String = f(&b).unwrap();
+            assert_eq!(s.contains("DROP"), true);
+            assert_eq!(s.contains("TABLE"), true);
+            assert_eq!(s.contains("IF"), true);
+            assert_eq!(s.contains("EXISTS"), true);
+            assert_eq!(s.contains("devices_2022_11_01"), true);
+        }
+    }
+
+    mod drop_bucket_mut {
+        use crate::bucket::Bucket;
+        use crate::del;
+
+        struct DummyClient {}
+
+        #[test]
+        fn test_unchecked() {
+            let builder = del::drop_builder_default_unchecked();
+            let remover = |_: &mut DummyClient, _q: &str| Ok(());
+            let f = del::drop_bucket_mut(remover, builder);
+            let b = Bucket::from(String::from("dates_cafef00ddeadbeafface86499792458"));
+            let mut c = DummyClient {};
+            f(&b, &mut c).unwrap();
+        }
+    }
+}

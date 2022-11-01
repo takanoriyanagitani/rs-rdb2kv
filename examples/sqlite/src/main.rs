@@ -1,11 +1,13 @@
 use rs_rdb2kv::evt::Event;
 
-pub mod get;
-pub mod upsert;
+mod del;
+mod get;
+mod upsert;
 
 fn sub() -> Result<(), Event> {
     upsert::upsert()?;
     get::select()?;
+    del::remove()?;
     Ok(())
 }
 

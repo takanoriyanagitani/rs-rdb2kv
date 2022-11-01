@@ -3,4 +3,5 @@
 pub enum Event {
     ConnectionError(String),
     UnexpectedError(String),
+    InvalidBucket(String),
 }

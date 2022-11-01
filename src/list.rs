@@ -42,3 +42,26 @@ pub fn list_query_builder_unchecked() -> impl Fn(&Bucket) -> Result<String, Even
     let checker = bucket_checker_new_unchecked();
     list_query_builder_checked(checker)
 }
+
+#[cfg(test)]
+mod test_list {
+
+    mod list_keys_bytes_new_mut {
+
+        use crate::bucket::Bucket;
+        use crate::list::{self, list_query_builder_unchecked};
+
+        struct DummyClient {}
+
+        #[test]
+        fn test_empty() {
+            let builder = list_query_builder_unchecked();
+            let list_getter = |_: &mut DummyClient, _q: &str| Ok(vec![]);
+            let f = list::list_keys_bytes_new_mut(list_getter, builder);
+            let b: Bucket = Bucket::from(String::from("dates"));
+            let mut c = DummyClient {};
+            let v: Vec<_> = f(&b, &mut c).unwrap();
+            assert_eq!(v.len(), 0);
+        }
+    }
+}

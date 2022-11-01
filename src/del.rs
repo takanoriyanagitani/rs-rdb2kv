@@ -98,4 +98,23 @@ mod test_del {
             f(&b, &mut c).unwrap();
         }
     }
+
+    mod delete_key_bytes_mut {
+        use crate::bucket::Bucket;
+        use crate::del;
+
+        struct DummyClient {}
+
+        #[test]
+        fn test_dummy() {
+            let remover = |_: &mut DummyClient, _q: &str, _k: &[u8]| Ok(42);
+            let builder = |_: &Bucket| Ok(String::from(""));
+            let f = del::delete_key_bytes_mut(remover, builder);
+            let b = Bucket::from(String::from(""));
+            let k = b"";
+            let mut c = DummyClient {};
+            let cnt: u64 = f(&b, k, &mut c).unwrap();
+            assert_eq!(cnt, 42);
+        }
+    }
 }

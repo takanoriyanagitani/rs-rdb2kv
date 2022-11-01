@@ -1,6 +1,25 @@
 use crate::bucket::{bucket_checker_new_unchecked, Bucket};
 use crate::evt::Event;
 
+/// Creates new remover which uses closures to delete rows and build delete query string.
+///
+/// # Arguments
+/// - delete: Delete rows.
+/// - builder: Builds delete query string.
+pub fn delete_key_bytes_mut<D, B, C>(
+    delete: D,
+    builder: B,
+) -> impl Fn(&Bucket, &[u8], &mut C) -> Result<u64, Event>
+where
+    D: Fn(&mut C, &str, &[u8]) -> Result<u64, Event>,
+    B: Fn(&Bucket) -> Result<String, Event>,
+{
+    move |b: &Bucket, key: &[u8], client: &mut C| {
+        let query: String = builder(b)?;
+        delete(client, query.as_str(), key)
+    }
+}
+
 /// Creates new bucket dropper which uses closures to drop bucket and build query string.
 ///
 /// # Arguments

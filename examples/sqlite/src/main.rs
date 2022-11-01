@@ -9,6 +9,7 @@ fn sub() -> Result<(), Event> {
     upsert::upsert()?;
     get::select()?;
     del::remove()?;
+    del::delete()?;
     list::list()?;
     Ok(())
 }
